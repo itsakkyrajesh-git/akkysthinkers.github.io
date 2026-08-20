@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Puzzle Lab — Akky's Thinkers Club</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1f2a24;
+    --bg-soft:#26332c;
+    --ink:#f5f1e8;
+    --ink-dim:#b9c2ba;
+    --coral:#ff6b5b;
+    --gold:#ffc857;
+    --teal:#4ecdc4;
+    --violet:#a78bec;
+    --radius:22px;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Nunito', sans-serif;
+    line-height:1.5;
+  }
+  h1,h2,h3,.display{ font-family:'Baloo 2', sans-serif; }
+  .wrap{ max-width:980px; margin:0 auto; padding:0 24px; }
+
+  /* ---------- Hero ---------- */
+  .hero{ position:relative; overflow:hidden; text-align:center; padding:56px 24px 76px; }
+  .hero-glyph{ position:absolute; top:-60px; right:-60px; width:340px; height:340px; opacity:.07; transform:rotate(12deg); pointer-events:none; }
+  .badge-mark{ font-size:44px; display:inline-block; margin-bottom:6px; }
+  .eyebrow{ text-transform:uppercase; letter-spacing:.16em; font-size:13px; color:var(--gold); font-weight:700; margin:0 0 10px; }
+  h1.display{ font-size:clamp(30px,6vw,50px); margin:0 0 16px; font-weight:800; }
+  h1.display .child-name{ color:var(--coral); }
+  .hero p.lead{ font-size:17px; color:var(--ink-dim); max-width:580px; margin:0 auto 30px; }
+  .name-row{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:30px; }
+  #child-name-input{
+    font-family:'Nunito',sans-serif; font-size:16px; font-weight:700; padding:12px 20px;
+    border-radius:999px; border:2px solid var(--gold); background:var(--bg-soft); color:var(--ink);
+    outline:none; min-width:230px; text-align:center;
+  }
+  #child-name-input:focus-visible{ outline:3px solid var(--teal); outline-offset:2px; }
+  .skills-list{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; font-size:13px; color:var(--ink-dim); }
+  .skills-list span{ background:var(--bg-soft); padding:7px 14px; border-radius:999px; }
+
+  /* ---------- Cards ---------- */
+  main.cards-grid{
+    display:grid; grid-template-columns:repeat(2,1fr); gap:50px 28px;
+    max-width:980px; margin:0 auto; padding:10px 24px 40px;
+  }
+  @media (max-width:680px){ main.cards-grid{ grid-template-columns:1fr; gap:56px 0; } }
+
+  .card{ position:relative; border-radius:var(--radius); padding:34px 26px 30px; color:#1c1c1c; }
+  .card::before{
+    content:''; position:absolute; top:-16px; left:36px; width:34px; height:34px;
+    border-radius:50%; background-color:inherit;
+  }
+  .card--coral{ background-color:var(--coral); }
+  .card--gold{ background-color:var(--gold); }
+  .card--teal{ background-color:var(--teal); }
+  .card--violet{ background-color:var(--violet); }
+
+  .card .icon{ font-size:32px; display:block; margin-bottom:8px; }
+  .card h2{ font-size:21px; margin:0 0 8px; font-weight:700; }
+  .card p.desc{ font-size:14.5px; line-height:1.5; margin:0 0 16px; opacity:.82; }
+
+  .quiz-meta{ font-size:11.5px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; opacity:.75; margin:0 0 16px; }
+  .quiz-question{ font-size:15.5px; font-weight:800; margin:2px 0 14px; line-height:1.45; }
+  .pattern-row{ font-size:32px; letter-spacing:6px; margin-bottom:4px; }
+
+  .choices{ display:flex; gap:10px; flex-wrap:wrap; }
+  .choice-btn{
+    font-family:'Nunito',sans-serif; font-size:17px; font-weight:700; padding:10px 16px;
+    border-radius:14px; border:2px solid rgba(0,0,0,.15); background:rgba(255,255,255,.55);
+    cursor:pointer; transition:transform .15s ease, background .15s ease;
+  }
+  .choice-btn:hover{ transform:translateY(-2px); background:rgba(255,255,255,.85); }
+  .choice-btn:focus-visible{ outline:3px solid #1c1c1c; outline-offset:2px; }
+  .choice-btn.correct{ background:#fff; border-color:#1c8a4a; }
+  .choice-btn.wrong{ background:#fff; border-color:#a13a26; animation:shake .35s ease; }
+  .choice-btn:disabled{ cursor:default; opacity:.7; }
+  @keyframes shake{
+    10%,90%{ transform:translateX(-2px); } 20%,80%{ transform:translateX(3px); }
+    30%,50%,70%{ transform:translateX(-5px); } 40%,60%{ transform:translateX(5px); }
+  }
+
+  .btn{ font-family:'Nunito'; font-weight:800; font-size:13.5px; padding:10px 18px; border-radius:999px; border:none; cursor:pointer; }
+  .btn:focus-visible{ outline:3px solid #1c1c1c; outline-offset:2px; }
+  .btn-primary{ background:#1c1c1c; color:#fff; }
+  .next-btn{ margin-top:16px; }
+
+  .chart{ display:flex; align-items:flex-end; gap:14px; height:120px; margin-bottom:14px; padding:0 2px; }
+  .bar-col{ display:flex; flex-direction:column; align-items:center; gap:6px; flex:1; }
+  .bar-wrap{ display:flex; align-items:flex-end; height:100%; }
+  .bar{ width:32px; border-radius:8px 8px 4px 4px; background:rgba(255,255,255,.8); }
+  .bar-label{ font-size:11.5px; font-weight:800; }
+  .bar-value{ font-size:11px; opacity:.7; }
+
+  .feedback{ margin-top:14px; font-weight:800; font-size:13.5px; min-height:18px; }
+  .feedback.good{ color:#154d2b; }
+  .feedback.bad{ color:#6d2717; }
+
+  /* ---------- Progress ---------- */
+  .progress{ max-width:620px; margin:10px auto 0; padding:30px 24px; text-align:center; }
+  .progress h2{ font-size:19px; margin:0 0 18px; }
+  .badges-row{ display:flex; justify-content:center; gap:16px; margin-bottom:10px; }
+  .badge-icon{ font-size:30px; opacity:.25; filter:grayscale(1); transition:opacity .25s, filter .25s, transform .25s; }
+  .badge-icon.earned{ opacity:1; filter:none; transform:scale(1.15); }
+  #congrats-banner{ margin-top:26px; background:var(--gold); color:#1c1c1c; padding:20px 24px; border-radius:18px; font-weight:800; font-size:16px; }
+  .hidden{ display:none; }
+
+  footer{ text-align:center; padding:44px 24px 26px; color:var(--ink-dim); font-size:13.5px; }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:.001ms !important; transition-duration:.001ms !important; }
+  }
+</style>
+</head>
+<body>
+
+  <section class="hero">
+    <svg class="hero-glyph" viewBox="0 0 100 100" aria-hidden="true">
+      <path fill="#f5f1e8" d="M35 10h20v8a7 7 0 0 0 14 0v-8h20v20h-8a7 7 0 0 0 0 14h8v20H79a7 7 0 0 0 -14 0v10H45v-10a7 7 0 0 0 -14 0v10H10V64h8a7 7 0 0 0 0-14h-8V30h11a7 7 0 0 0 14 0z"/>
+    </svg>
+    <span class="badge-mark">🧩</span>
+    <p class="eyebrow">Akky's Thinkers Club</p>
+    <h1 class="display">Congratulations, <span class="child-name">Akky</span>!<br>You've been selected 🎉</h1>
+    <p class="lead">You've been picked to join Puzzle Lab — a free space to build logical reasoning, computational thinking, problem solving, and analytical thinking, with 100+ questions in every skill.</p>
+    <div class="name-row">
+      <input id="child-name-input" type="text" value="Akky" maxlength="24">
+    </div>
+    <div class="skills-list">
+      <span>🔺 Logical Reasoning</span>
+      <span>💻 Computational Thinking</span>
+      <span>🧠 Problem Solving</span>
+      <span>📊 Analytical Thinking</span>
+    </div>
+  </section>
+
+  <main class="cards-grid">
+
+    <div class="card card--coral" data-skill="logical">
+      <span class="icon">🔺</span>
+      <h2>Logical Reasoning</h2>
+      <p class="desc">Spotting patterns and figuring out what comes next. 100+ questions to practice.</p>
+      <p class="quiz-meta">Score: <span class="score">0</span> correct &middot; <span class="badge-note">Get 10 correct to earn your badge</span></p>
+      <div class="quiz-display"></div>
+      <p class="quiz-question"></p>
+      <div class="choices"></div>
+      <p class="feedback"></p>
+      <button class="btn btn-primary next-btn hidden">Next question &rarr;</button>
+    </div>
+
+    <div class="card card--gold" data-skill="computational">
+      <span class="icon">💻</span>
+      <h2>Computational Thinking</h2>
+      <p class="desc">Breaking a job into small, ordered steps. 100+ questions to practice.</p>
+      <p class="quiz-meta">Score: <span class="score">0</span> correct &middot; <span class="badge-note">Get 10 correct to earn your badge</span></p>
+      <div class="quiz-display"></div>
+      <p class="quiz-question"></p>
+      <div class="choices"></div>
+      <p class="feedback"></p>
+      <button class="btn btn-primary next-btn hidden">Next question &rarr;</button>
+    </div>
+
+    <div class="card card--teal" data-skill="problem">
+      <span class="icon">🧠</span>
+      <h2>Problem Solving</h2>
+      <p class="desc">Reading carefully and thinking a puzzle through. 100+ questions to practice.</p>
+      <p class="quiz-meta">Score: <span class="score">0</span> correct &middot; <span class="badge-note">Get 10 correct to earn your badge</span></p>
+      <div class="quiz-display"></div>
+      <p class="quiz-question"></p>
+      <div class="choices"></div>
+      <p class="feedback"></p>
+      <button class="btn btn-primary next-btn hidden">Next question &rarr;</button>
+    </div>
+
+    <div class="card card--violet" data-skill="analytical">
+      <span class="icon">📊</span>
+      <h2>Analytical Thinking</h2>
+      <p class="desc">Reading data closely and comparing what you see. 100+ questions to practice.</p>
+      <p class="quiz-meta">Score: <span class="score">0</span> correct &middot; <span class="badge-note">Get 10 correct to earn your badge</span></p>
+      <div class="quiz-display"></div>
+      <p class="quiz-question"></p>
+      <div class="choices"></div>
+      <p class="feedback"></p>
+      <button class="btn btn-primary next-btn hidden">Next question &rarr;</button>
+    </div>
+
+  </main>
+
+  <section class="progress">
+    <h2>🏆 Badges earned: <span id="badge-count">0</span> / 4</h2>
+    <div class="badges-row">
+      <span class="badge-icon" data-skill="logical">🔺</span>
+      <span class="badge-icon" data-skill="computational">💻</span>
+      <span class="badge-icon" data-skill="problem">🧠</span>
+      <span class="badge-icon" data-skill="analytical">📊</span>
+    </div>
+    <div id="congrats-banner" class="hidden">🌟 All four badges earned, <span class="child-name">Akky</span>! You're thinking like a true member of Akky's Thinkers Club.</div>
+  </section>
+
+  <footer>
+    Made for <span class="child-name">Akky</span> — keep practicing a little every day. Big thinking starts small. 🧩
+  </footer>
+
+<script>
+  // ---------- Utilities ----------
+  function shuffle(arr){
+    var a = arr.slice();
+    for(var i=a.length-1;i>0;i--){
+      var j = Math.floor(Math.random()*(i+1));
+      var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+    }
+    return a;
+  }
+
+  function makeOptions(correct, extras){
+    var seen = {};
+    seen[correct] = true;
+    var result = [];
+    extras.forEach(function(v){
+      if(!seen[v]){ seen[v] = true; result.push(v); }
+    });
+    var bump = 1;
+    var guard = 0;
+    while(result.length < 3 && guard < 50){
+      var v = correct + bump;
+      if(!seen[v]){ seen[v] = true; result.push(v); }
+      bump = bump > 0 ? -bump : (-bump + 1);
+      guard++;
+    }
+    return shuffle([correct].concat(result.slice(0,3)));
+  }
+
+  // ---------- Logical Reasoning ----------
+  function generateLogical(){
+    var qs = [];
+    var oddSets = [
+      ["🍎","🍌","🍇","🚗"],
+      ["🐶","🐱","🐦","🚲"],
+      ["⚽","🏀","🎾","📚"],
+      ["🎮","🎲","🧩","🍕"],
+      ["🚗","🚕","🚌","🐘"],
+      ["🎸","🎹","🥁","🍔"],
+      ["🐟","🐬","🐳","🦋"],
+      ["🌹","🌻","🌷","🪑"],
+      ["🍪","🍩","🎂","📱"],
+      ["🌞","🌙","⭐","🍕"]
+    ];
+    oddSets.forEach(function(set){
+      var options = shuffle(set.slice());
+      var correct = set[3];
+      qs.push({
+        displayHTML: '<div class="pattern-row" style="font-size:28px;">' + set.join(" &nbsp; ") + '</div>',
+        questionText: "Which one does not belong?",
+        options: options,
+        correctIndex: options.indexOf(correct)
+      });
+    });
+
+    var shapes = ["🔺","🔵","🟩","🟡","⭐","🟠","🔶","🟣"];
+    for(var i=0;i<shapes.length;i++){
+      for(var j=0;j<shapes.length;j++){
+        if(i===j) continue;
+        var a = shapes[i], b = shapes[j];
+        var pool = shapes.filter(function(s){ return s!==a && s!==b; });
+        var distractors = shuffle(pool).slice(0,3);
+        var options = shuffle([b].concat(distractors));
+        qs.push({
+          displayHTML: '<div class="pattern-row">' + [a,b,a,b,a].join(" ") + " ❓</div>",
+          questionText: "What comes next in the pattern?",
+          options: options,
+          correctIndex: options.indexOf(b)
+        });
+      }
+    }
+
+    var starts = [1,2,3,4,5,10,20,50];
+    var steps = [1,2,3,5,10];
+    starts.forEach(function(start){
+      steps.forEach(function(step){
+        var seq = [];
+        for(var k=0;k<5;k++){ seq.push(start + step*k); }
+        var correct = start + step*5;
+        var options = makeOptions(correct, [correct+step, correct-step, correct+step*2]).map(String);
+        qs.push({
+          displayHTML: '<div class="pattern-row" style="font-size:23px;">' + seq.join(", ") + ", ❓</div>",
+          questionText: "What number comes next?",
+          options: options,
+          correctIndex: options.indexOf(String(correct))
+        });
+      });
+    });
+
+    return qs;
+  }
+
+  // ---------- Computational Thinking ----------
+  function generateComputational(){
+    var qs = [];
+    var scenarios = [
+      ["Wet your toothbrush","Add a pea-size dab of toothpaste","Brush every tooth for 2 minutes","Rinse and smile"],
+      ["Take out two slices of bread","Spread on your favorite filling","Put the slices together","Cut it in half and enjoy"],
+      ["Fill a pot with soil","Poke a small hole and drop in the seed","Cover the seed and water it","Place the pot in sunlight"],
+      ["Wet your hands with water","Add soap and rub for 20 seconds","Rinse the soap off","Dry your hands with a towel"],
+      ["Wake up and stretch","Brush your teeth and get dressed","Eat your breakfast","Pack your bag and head out"],
+      ["Mix the dough ingredients together","Shape the dough into small balls","Bake them in the oven","Let them cool before eating"],
+      ["Unroll the kite string","Hold the kite up in the wind","Let go and run to lift it","Reel in the string to bring it down"],
+      ["Fill a bucket with wet sand","Flip the bucket over on the beach","Gently lift the bucket away","Decorate with shells and sticks"],
+      ["Boil water in a kettle","Put a tea bag in a cup","Pour the hot water over the tea bag","Let it steep, then sip"],
+      ["Put on your helmet","Sit on the bike seat","Push the pedals to start moving","Steer and balance as you ride"],
+      ["Choose a book from the shelf","Check it out at the front desk","Read a little each day","Return it before it is due"],
+      ["Fill a watering can","Walk to the garden bed","Pour water gently on the plants","Check that the soil is damp"],
+      ["Fold the paper in half lengthwise","Fold the top corners to the center","Fold the wings down on each side","Throw it and watch it fly"],
+      ["Sort clothes by color","Put clothes in the washing machine","Add detergent and start the wash","Dry and fold the clean clothes"],
+      ["Lay out the placemats","Put a plate on each mat","Add forks, spoons, and cups","Call everyone to sit down"],
+      ["Set up paper and paints","Sketch a light outline","Fill in the colors","Let the painting dry"],
+      ["Get the pet's food bowl","Measure the right amount of food","Pour it into the bowl","Set the bowl down for your pet"],
+      ["Find all the edge pieces first","Build the border frame","Fill in the middle sections","Place the final piece with pride"],
+      ["Add fruit to the blender","Pour in milk or juice","Blend until smooth","Pour into a glass and drink"],
+      ["Rinse the car with water","Scrub it with soapy water","Rinse the soap off again","Dry it with a soft towel"],
+      ["Plant flowers butterflies like","Water the flowers regularly","Wait for butterflies to visit","Watch and enjoy the garden"],
+      ["Fold a piece of paper in half","Draw a picture on the front","Write a message inside","Sign your name and give it"],
+      ["Choose a sandwich or snack","Add a piece of fruit","Pack a drink too","Close the lunchbox and pack your bag"],
+      ["Get comfortable in the shallow water","Practice kicking your legs","Practice moving your arms","Put it all together and swim"],
+      ["Choose a flat base block","Stack blocks one at a time","Keep the tower balanced as you go","Add the final block on top"]
+    ];
+    scenarios.forEach(function(steps){
+      var correctLabel = "A, B, C, D";
+      var wrongLabels = ["D, C, B, A", "B, A, C, D", "A, B, D, C"];
+      var options = shuffle([correctLabel].concat(wrongLabels));
+      var display = '<div class="pattern-row" style="font-size:14px; text-align:left; letter-spacing:0; line-height:1.65;">' +
+        "A. " + steps[0] + "<br>B. " + steps[1] + "<br>C. " + steps[2] + "<br>D. " + steps[3] +
+        "</div>";
+      qs.push({
+        displayHTML: display,
+        questionText: "What is the correct order to do this?",
+        options: options,
+        correctIndex: options.indexOf(correctLabel)
+      });
+    });
+
+    for(var dx=1; dx<=10; dx++){
+      for(var dy=1; dy<=9; dy++){
+        var correct = dx + " Right, " + dy + " Up";
+        var wrong1 = (dx === dy) ? ((dx+1) + " Right, " + (dy+2) + " Up") : (dy + " Right, " + dx + " Up");
+        var wrong2 = dx + " Left, " + dy + " Up";
+        var wrong3 = dx + " Right, " + dy + " Down";
+        var options = shuffle([correct, wrong1, wrong2, wrong3]);
+        qs.push({
+          displayHTML: '<div class="pattern-row" style="font-size:15px; letter-spacing:0;">🤖 A robot must move <strong>' + dx + "</strong> steps right and <strong>" + dy + "</strong> steps up to reach the star ⭐.</div>",
+          questionText: "Which instructions get it there directly?",
+          options: options,
+          correctIndex: options.indexOf(correct)
+        });
+      }
+    }
+    return qs;
+  }
+
+  // ---------- Problem Solving ----------
+  function generateProblem(){
+    var qs = [];
+    var riddles = [
+      { q: "A farmer had 17 sheep. All but 9 ran away. How many sheep are left?", opts: ["8","9","17","0"], correct: "9" },
+      { q: "Which is heavier: a kilogram of feathers or a kilogram of stones?", opts: ["Feathers","Stones","They weigh the same","Neither has weight"], correct: "They weigh the same" },
+      { q: "A rooster lays an egg on the very top of a barn roof. Which side does it roll down?", opts: ["The left side","The right side","Neither - roosters do not lay eggs","Straight down the middle"], correct: "Neither - roosters do not lay eggs" },
+      { q: "How many months of the year have 28 days?", opts: ["1","6","11","12"], correct: "12" },
+      { q: "What has hands but cannot clap?", opts: ["A clock","A glove","A robot","A puppet"], correct: "A clock" },
+      { q: "A boat is filled with people, yet there is not a single person on board. How?", opts: ["Everyone on the boat is married","It is a toy boat","The boat is actually empty","The people are invisible"], correct: "Everyone on the boat is married" },
+      { q: "What gets wetter the more it dries?", opts: ["A towel","A sponge","The sun","A shoe"], correct: "A towel" },
+      { q: "What has a face and two hands but no arms or legs?", opts: ["A clock","A robot","A doll","A mirror"], correct: "A clock" },
+      { q: "What has to be broken before you can use it?", opts: ["An egg","A rule","A stick","A window"], correct: "An egg" },
+      { q: "What comes once in a minute, twice in a moment, but never in a thousand years?", opts: ["The letter M","The letter T","The letter A","The letter S"], correct: "The letter M" },
+      { q: "I am tall when I am young, and short when I am old. What am I?", opts: ["A candle","A tree","A person","A shadow"], correct: "A candle" },
+      { q: "The more you take, the more you leave behind. What am I?", opts: ["Footsteps","Time","Money","Water"], correct: "Footsteps" },
+      { q: "What can travel all around the world while staying in the same corner?", opts: ["A stamp","A map","A coin","A photo"], correct: "A stamp" },
+      { q: "What has many keys but cannot open a single lock?", opts: ["A piano","A treasure chest","A locksmith","A door"], correct: "A piano" },
+      { q: "What gets bigger the more you take away from it?", opts: ["A hole","A balloon","A number","A shadow"], correct: "A hole" }
+    ];
+    riddles.forEach(function(r){
+      var options = shuffle(r.opts.slice());
+      qs.push({
+        displayHTML: "",
+        questionText: r.q,
+        options: options,
+        correctIndex: options.indexOf(r.correct)
+      });
+    });
+
+    var names = ["Sam","Mia","Leo","Zoe","Ana","Ben","Cara","Dev","Ivy","Max"];
+    var objects = ["apples","marbles","stickers","balloons","crayons","coins","stars","cookies"];
+
+    for(var a=2; a<=11; a++){
+      for(var b=2; b<=6; b++){
+        var name = names[(a+b) % names.length];
+        var obj = objects[(a*b) % objects.length];
+        var correct = a+b;
+        var options = makeOptions(correct, [a, b, correct+2]).map(String);
+        qs.push({
+          displayHTML: "",
+          questionText: name + " has " + a + " " + obj + " and finds " + b + " more. How many " + obj + " does " + name + " have now?",
+          options: options,
+          correctIndex: options.indexOf(String(correct))
+        });
+      }
+    }
+
+    for(var a2=6; a2<=15; a2++){
+      for(var b2=1; b2<=5; b2++){
+        var name2 = names[(a2+b2+3) % names.length];
+        var obj2 = objects[(a2+b2+2) % objects.length];
+        var correct2 = a2-b2;
+        var options2 = makeOptions(correct2, [a2, b2, correct2+2]).map(String);
+        qs.push({
+          displayHTML: "",
+          questionText: name2 + " has " + a2 + " " + obj2 + " and gives away " + b2 + ". How many " + obj2 + " does " + name2 + " have left?",
+          options: options2,
+          correctIndex: options2.indexOf(String(correct2))
+        });
+      }
+    }
+
+    return qs;
+  }
+
+  // ---------- Analytical Thinking ----------
+  function generateAnalytical(){
+    var qs = [];
+    var themes = [
+      { obj: "apples", verb: "collected" },
+      { obj: "stickers", verb: "earned" },
+      { obj: "points", verb: "scored" },
+      { obj: "books", verb: "read" },
+      { obj: "stars", verb: "earned" },
+      { obj: "minutes", verb: "practiced for" }
+    ];
+    var qtypes = ["most","fewest","difference","sum"];
+    var valueSets = [[3,7,5,2],[8,4,6,1],[2,9,5,3],[6,2,8,4],[5,9,3,7]];
+    var names4 = ["Mia","Leo","Zoe","Sam"];
+
+    themes.forEach(function(theme){
+      qtypes.forEach(function(qtype){
+        valueSets.forEach(function(vals){
+          var maxV = Math.max.apply(null, vals);
+          var barHeights = vals.map(function(v){ return Math.round(v/maxV*120); });
+          var chartHTML = '<div class="chart">' + names4.map(function(n, idx){
+            return '<div class="bar-col"><div class="bar-wrap"><div class="bar" style="height:' + barHeights[idx] + 'px"></div></div><span class="bar-label">' + n + '</span><span class="bar-value">' + vals[idx] + '</span></div>';
+          }).join("") + "</div>";
+
+          var questionText, options, correct;
+          if(qtype === "most"){
+            var maxIdx = vals.indexOf(Math.max.apply(null, vals));
+            questionText = "Who " + theme.verb + " the most " + theme.obj + "?";
+            correct = names4[maxIdx];
+            options = shuffle(names4.slice());
+          } else if(qtype === "fewest"){
+            var minIdx = vals.indexOf(Math.min.apply(null, vals));
+            questionText = "Who " + theme.verb + " the fewest " + theme.obj + "?";
+            correct = names4[minIdx];
+            options = shuffle(names4.slice());
+          } else if(qtype === "difference"){
+            var maxIdx2 = vals.indexOf(Math.max.apply(null, vals));
+            var minIdx2 = vals.indexOf(Math.min.apply(null, vals));
+            var diff = vals[maxIdx2] - vals[minIdx2];
+            questionText = "How many more " + theme.obj + " did " + names4[maxIdx2] + " have than " + names4[minIdx2] + "?";
+            correct = String(diff);
+            options = makeOptions(diff, [diff+1, diff-1, vals[maxIdx2]]).map(String);
+          } else {
+            var sum = vals[0] + vals[1];
+            questionText = "How many " + theme.obj + " did " + names4[0] + " and " + names4[1] + " have together?";
+            correct = String(sum);
+            options = makeOptions(sum, [sum+2, sum-2, vals[0]*vals[1]]).map(String);
+          }
+
+          qs.push({
+            displayHTML: chartHTML,
+            questionText: questionText,
+            options: options,
+            correctIndex: options.indexOf(correct)
+          });
+        });
+      });
+    });
+
+    return qs;
+  }
+
+  // ---------- Quiz engine ----------
+  var banks = {
+    logical: shuffle(generateLogical()),
+    computational: shuffle(generateComputational()),
+    problem: shuffle(generateProblem()),
+    analytical: shuffle(generateAnalytical())
+  };
+  var pointer = { logical:0, computational:0, problem:0, analytical:0 };
+  var scores = { logical:0, computational:0, problem:0, analytical:0 };
+  var badgeEarned = { logical:false, computational:false, problem:false, analytical:false };
+  var BADGE_THRESHOLD = 10;
+
+  function cardEls(skill){
+    var card = document.querySelector('.card[data-skill="' + skill + '"]');
+    return {
+      card: card,
+      display: card.querySelector('.quiz-display'),
+      question: card.querySelector('.quiz-question'),
+      choices: card.querySelector('.choices'),
+      feedback: card.querySelector('.feedback'),
+      nextBtn: card.querySelector('.next-btn'),
+      scoreEl: card.querySelector('.score'),
+      badgeNote: card.querySelector('.badge-note')
+    };
+  }
+
+  function loadQuestion(skill){
+    var els = cardEls(skill);
+    var bank = banks[skill];
+    var q = bank[pointer[skill] % bank.length];
+    els.display.innerHTML = q.displayHTML || "";
+    els.question.textContent = q.questionText;
+    els.choices.innerHTML = "";
+    els.feedback.textContent = "";
+    els.feedback.className = "feedback";
+    els.nextBtn.classList.add("hidden");
+    q.options.forEach(function(optText, idx){
+      var btn = document.createElement("button");
+      btn.className = "choice-btn";
+      btn.textContent = optText;
+      btn.addEventListener("click", function(){ handleAnswer(skill, idx, q); });
+      els.choices.appendChild(btn);
+    });
+  }
+
+  function handleAnswer(skill, idx, q){
+    var els = cardEls(skill);
+    var buttons = els.choices.querySelectorAll(".choice-btn");
+    buttons.forEach(function(b, i){
+      b.disabled = true;
+      if(i === q.correctIndex) b.classList.add("correct");
+      else if(i === idx) b.classList.add("wrong");
+    });
+    if(idx === q.correctIndex){
+      scores[skill]++;
+      els.feedback.textContent = "Nice! That's correct.";
+      els.feedback.className = "feedback good";
+    } else {
+      els.feedback.textContent = "Not quite - the highlighted one was correct.";
+      els.feedback.className = "feedback bad";
+    }
+    els.scoreEl.textContent = scores[skill];
+    updateBadge(skill);
+    els.nextBtn.classList.remove("hidden");
+  }
+
+  function updateBadge(skill){
+    if(!badgeEarned[skill] && scores[skill] >= BADGE_THRESHOLD){
+      badgeEarned[skill] = true;
+      var els = cardEls(skill);
+      els.badgeNote.textContent = "🌟 Badge earned!";
+      var icon = document.querySelector('.badge-icon[data-skill="' + skill + '"]');
+      if(icon) icon.classList.add("earned");
+      updateOverallProgress();
+    }
+  }
+
+  function updateOverallProgress(){
+    var count = Object.keys(badgeEarned).filter(function(k){ return badgeEarned[k]; }).length;
+    document.getElementById("badge-count").textContent = count;
+    if(count === 4){
+      document.getElementById("congrats-banner").classList.remove("hidden");
+      document.getElementById("congrats-banner").scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }
+
+  ["logical","computational","problem","analytical"].forEach(function(skill){
+    var els = cardEls(skill);
+    els.nextBtn.addEventListener("click", function(){
+      pointer[skill]++;
+      loadQuestion(skill);
+    });
+    loadQuestion(skill);
+  });
+
+  // ---------- Name personalization ----------
+  var nameInput = document.getElementById("child-name-input");
+  var nameTargets = document.querySelectorAll(".child-name");
+  function applyName(){
+    var val = nameInput.value.trim() || "Akky";
+    nameTargets.forEach(function(el){ el.textContent = val; });
+  }
+  nameInput.addEventListener("input", applyName);
+  applyName();
+</script>
+</body>
+</html>
